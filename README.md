@@ -45,7 +45,7 @@ npx supabase functions deploy generate-api-key --project-ref <your-project-ref>
 ## 🔌 API Documentation
 
 ### Honeypot Endpoint
-**POST** `/functions/v1/honeypot`
+**POST** `https://gemccyscdcudahvfqeyk.supabase.co/functions/v1/honeypot`
 
 Simulates receiving a message from a scammer. The system analyzes it and generates a response if needed.
 

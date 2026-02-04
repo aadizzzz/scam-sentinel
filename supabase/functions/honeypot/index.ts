@@ -196,42 +196,48 @@ async function generateAgentResponse(
   conversationHistory: Array<{ role: string; content: string }>,
   latestMessage: string
 ): Promise<string> {
-  const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+  const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 
-  if (!LOVABLE_API_KEY) {
-    throw new Error('LOVABLE_API_KEY not configured');
+  if (!GEMINI_API_KEY) {
+    throw new Error('GEMINI_API_KEY not configured');
   }
 
   const messages = [
-    { role: 'system', content: AGENT_SYSTEM_PROMPT },
+    { role: 'user', parts: [{ text: AGENT_SYSTEM_PROMPT }] },
     ...conversationHistory.map(msg => ({
-      role: msg.role === 'scammer' ? 'user' : 'assistant',
-      content: msg.content
+      role: msg.role === 'scammer' ? 'user' : 'model',
+      parts: [{ text: msg.content }]
     })),
-    { role: 'user', content: latestMessage }
+    { role: 'user', parts: [{ text: latestMessage }] }
   ];
 
-  const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${LOVABLE_API_KEY}`
-    },
-    body: JSON.stringify({
-      model: 'google/gemini-3-flash-preview',
-      messages,
-      temperature: 0.8,
-      max_tokens: 150
-    })
-  });
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        contents: messages,
+        generationConfig: {
+          temperature: 0.8,
+          maxOutputTokens: 150
+        }
+      })
+    });
 
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`AI Gateway error: ${error}`);
+    if (!response.ok) {
+      console.error(`Gemini API error (status ${response.status}):`, await response.text());
+      // Fallback if API fails (e.g. quota limit)
+      return "oh i see... but i am a bit confused, can you explain how this works exactly?";
+    }
+
+    const data = await response.json();
+    return data.candidates[0]?.content?.parts[0]?.text || "hmm, can u explain again? im confused...";
+  } catch (err) {
+    console.error('Error calling Gemini:', err);
+    return "ummm okay, but is this safe? i dont want to get in trouble";
   }
-
-  const data = await response.json();
-  return data.choices[0]?.message?.content || "hmm, can u explain again? im confused...";
 }
 
 // ============= MAIN HANDLER =============
@@ -249,6 +255,9 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Debug logging
+    console.log("Request Headers:", Object.fromEntries(req.headers.entries()));
+
     // Parse request body early to check for API key in body
     let body;
     try {
