@@ -249,11 +249,23 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Validate API key
-    const apiKey = req.headers.get('x-api-key');
+    // Parse request body early to check for API key in body
+    let body;
+    try {
+      body = await req.json();
+    } catch (e) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON body' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate API key (check header first, then body)
+    const apiKey = req.headers.get('x-api-key') || body.api_key;
+
     if (!apiKey) {
       return new Response(
-        JSON.stringify({ error: 'Missing x-api-key header' }),
+        JSON.stringify({ error: 'Missing API key. Please provide it in x-api-key header or as "api_key" in body.' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
