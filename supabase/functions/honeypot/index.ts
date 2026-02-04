@@ -306,8 +306,7 @@ Deno.serve(async (req) => {
       })
       .eq('id', apiKeyRecord.id);
 
-    // Parse request body
-    const body = await req.json();
+    // Body is already parsed above
 
     // Check for common field names
     const message = body.message || body.content || body.text || body.body || body.query || body.input;
