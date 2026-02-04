@@ -13,7 +13,7 @@ export function ApiTester() {
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || "gstsdhvvzfuitbokswcf";
+  const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || "gemccyscdcudahvfqeyk";
   const apiEndpoint = `https://${projectId}.supabase.co/functions/v1/honeypot`;
 
   const handleSubmit = async () => {

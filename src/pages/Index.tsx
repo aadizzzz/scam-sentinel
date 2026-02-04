@@ -169,7 +169,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="absolute inset-0 scanline pointer-events-none opacity-30" />
-      
+
       <Header
         activeConversations={activeConversations}
         totalScamsDetected={totalScamsDetected}
@@ -380,7 +380,7 @@ const Index = () => {
                 <div className="space-y-2">
                   <h4 className="font-mono text-sm text-primary">Request</h4>
                   <pre className="p-4 rounded-lg bg-secondary text-sm font-mono overflow-x-auto">
-{`POST /functions/v1/honeypot
+                    {`POST https://gemccyscdcudahvfqeyk.supabase.co/functions/v1/honeypot
 Headers:
   Content-Type: application/json
   x-api-key: <your-api-key>
@@ -396,7 +396,7 @@ Body:
                 <div className="space-y-2">
                   <h4 className="font-mono text-sm text-primary">Response</h4>
                   <pre className="p-4 rounded-lg bg-secondary text-sm font-mono overflow-x-auto">
-{`{
+                    {`{
   "conversation_id": "uuid",
   "scam_detected": true,
   "agent_active": true,
