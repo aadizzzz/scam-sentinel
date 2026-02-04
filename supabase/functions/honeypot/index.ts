@@ -248,7 +248,15 @@ async function generateAgentResponse(
 Deno.serve(async (req: Request) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    const requestHeaders = req.headers.get('Access-Control-Request-Headers') || '*';
+    return new Response(null, {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE',
+        'Access-Control-Allow-Headers': requestHeaders,
+        'Access-Control-Max-Age': '86400',
+      }
+    });
   }
 
   // Handle health checks / verification probes
