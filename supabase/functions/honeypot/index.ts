@@ -197,7 +197,7 @@ async function generateAgentResponse(
   latestMessage: string
 ): Promise<string> {
   const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-  
+
   if (!LOVABLE_API_KEY) {
     throw new Error('LOVABLE_API_KEY not configured');
   }
@@ -296,11 +296,18 @@ Deno.serve(async (req) => {
 
     // Parse request body
     const body = await req.json();
-    const { message, conversation_id } = body;
+
+    // Check for common field names
+    const message = body.message || body.content || body.text || body.body || body.query || body.input;
+    const { conversation_id } = body;
 
     if (!message || typeof message !== 'string') {
+      console.log('Received body keys:', Object.keys(body));
       return new Response(
-        JSON.stringify({ error: 'Message is required' }),
+        JSON.stringify({
+          error: 'Message is required',
+          details: 'Please provide the scam message in one of these fields: message, content, text, body, query, input'
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -363,10 +370,10 @@ Deno.serve(async (req) => {
 
     // Extract intelligence from message
     const intelligence = extractIntelligence(message);
-    
+
     // Store extracted intelligence
     const intelligenceRecords = [];
-    
+
     for (const account of intelligence.bank_accounts) {
       intelligenceRecords.push({
         conversation_id: convId,
@@ -374,7 +381,7 @@ Deno.serve(async (req) => {
         value: account
       });
     }
-    
+
     for (const upi of intelligence.upi_ids) {
       intelligenceRecords.push({
         conversation_id: convId,
@@ -382,7 +389,7 @@ Deno.serve(async (req) => {
         value: upi
       });
     }
-    
+
     for (const url of intelligence.phishing_urls) {
       intelligenceRecords.push({
         conversation_id: convId,
@@ -390,7 +397,7 @@ Deno.serve(async (req) => {
         value: url
       });
     }
-    
+
     for (const phone of intelligence.phone_numbers) {
       intelligenceRecords.push({
         conversation_id: convId,
@@ -398,7 +405,7 @@ Deno.serve(async (req) => {
         value: phone
       });
     }
-    
+
     for (const email of intelligence.emails) {
       intelligenceRecords.push({
         conversation_id: convId,
@@ -415,7 +422,7 @@ Deno.serve(async (req) => {
 
     // Generate agent response if scam detected
     let responseMessage = '';
-    
+
     if (scamDetected && agentActive) {
       // Get conversation history
       const { data: history } = await supabase
