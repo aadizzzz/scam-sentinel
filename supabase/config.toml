@@ -1,1 +1,4 @@
-project_id = "gstsdhvvzfuitbokswcf"
+project_id = "gemccyscdcudahvfqeyk"
+
+[functions.honeypot]
+verify_jwt = false
